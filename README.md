@@ -19,7 +19,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git branch -M main
-git remote add origin https://github.com/TON_USERNAME/mtg-manabase.git
+git remote add origin https://github.com/TON_USERNAME/manakurve.git
 git push -u origin main
 ```
 
@@ -31,7 +31,7 @@ git push -u origin main
 4. Cliquer **Save**
 
 Ton site sera accessible à :
-`https://TON_USERNAME.github.io/mtg-manabase/`
+`https://TON_USERNAME.github.io/manakurve/`
 
 ### 3. Mises à jour
 
@@ -59,7 +59,7 @@ ui.js        — Interface et interactions
 La table de Karsten donne le nombre de sources colorées nécessaires dans un deck 60 cartes / 24 lands pour atteindre ~90% de consistance :
 
 | Pips | Tour 1 | Tour 2 | Tour 3 | Tour 4 |
-|------|--------|--------|--------|--------|
+| ---- | ------ | ------ | ------ | ------ |
 | C    | 14     | 13     | 12     | 11     |
 | CC   | 20     | 16     | 14     | 13     |
 | CCC  | 23     | 21     | 18     | 16     |
