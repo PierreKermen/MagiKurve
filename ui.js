@@ -36,6 +36,7 @@ function initToggles() {
 
 /* ── Fonction principale ── */
 async function calculate() {
+  await allLandsReady;
   const btn = document.getElementById("calcBtn");
   const status = document.getElementById("status");
   const results = document.getElementById("results");
