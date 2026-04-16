@@ -96,7 +96,7 @@ async function calculate() {
   /* ── Calcul ── */
   const requirements = computeColorRequirements(cardData, landCount);
   const availableLands = getAvailableLands(requirements, selectedTypes);
-  const manaBases = generateManaBases(availableLands, requirements, landCount);
+  const manaBases = await generateManaBases(availableLands, requirements, landCount);
 
   setStatus(status, "");
   btn.disabled = false;
