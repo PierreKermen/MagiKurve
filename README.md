@@ -65,4 +65,4 @@ La table de Karsten donne le nombre de sources colorées nécessaires dans un de
 | CCC  | 23     | 21     | 18     | 16     |
 | CCCC | 24     | 23     | 22     | 20     |
 
-Source : [Frank Karsten, ChannelFireball 2022](https://www.channelfireball.com/articles/how-many-colored-mana-sources-do-you-need-to-consistently-cast-your-spells-a-guilds-of-ravnica-update/)
+Source : [Frank Karsten, ChannelFireball 2022](https://www.tcgplayer.com/content/article/How-Many-Sources-Do-You-Need-to-Consistently-Cast-Your-Spells-A-2022-Update/dc23a7d2-0a16-4c0b-ad36-586fcca03ad8/?srsltid=AfmBOoq-qAkvUojZMWzu-eIqiw8Lx9zr7A5in2GahSRymUlus0PfBfrn)
