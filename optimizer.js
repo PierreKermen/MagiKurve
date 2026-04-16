@@ -1,0 +1,187 @@
+/* optimizer.js — Génération et classement des mana bases
+   Prend les requirements Karsten et un pool de lands disponibles,
+   produit N combinaisons optimisées. */
+
+const SCRYFALL_DELAY_MS = 80; // respecter le rate limit Scryfall
+
+/* ── Parsing de la decklist ── */
+function parseDecklist(text) {
+  const cards = [];
+  const basicNames = new Set(['plains','island','swamp','mountain','forest']);
+  const knownLandIds = new Set(ALL_LANDS.map(l => l.name.toLowerCase()));
+
+  for (const raw of text.trim().split('\n')) {
+    const line = raw.trim();
+    if (!line || line.startsWith('//') || line === '') continue;
+
+    // Ignorer les séparateurs de sections Arena ("Deck", "Sideboard", etc.)
+    if (/^(deck|sideboard|commander|companion)$/i.test(line)) continue;
+
+    const m = line.match(/^(\d+)\s+(.+?)(\s+\(\w+\)\s+\d+)?$/);
+    if (!m) continue;
+
+    const qty  = parseInt(m[1], 10);
+    const name = m[2].trim();
+
+    // Ignorer les basics et les lands connues
+    if (basicNames.has(name.toLowerCase())) continue;
+    if (knownLandIds.has(name.toLowerCase())) continue;
+
+    cards.push({ qty, name });
+  }
+  return cards;
+}
+
+/* ── Appel Scryfall ── */
+async function fetchCardData(cardName) {
+  const url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const d = await r.json();
+    // Pour les MDFC (double face), utiliser le face avant
+    if (d.card_faces && d.card_faces[0].mana_cost) {
+      return { ...d, mana_cost: d.card_faces[0].mana_cost, cmc: d.cmc };
+    }
+    return d;
+  } catch {
+    return null;
+  }
+}
+
+/* ── Filtrer les lands disponibles selon les couleurs actives ── */
+function getAvailableLands(requirements, selectedTypes) {
+  const activeColors = new Set(
+    Object.entries(requirements).filter(([,v]) => v > 0).map(([c]) => c)
+  );
+  if (activeColors.size === 0) return [];
+
+  return ALL_LANDS.filter(land => {
+    if (!selectedTypes.has(land.type)) return false;
+    if (land.type === 'basicland') return activeColors.has(land.colors[0]);
+    return land.colors.some(c => activeColors.has(c));
+  });
+}
+
+/* ── Calcul des sources fournies par une allocation ── */
+function computeSources(allocation) {
+  const sources = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+  for (const [id, count] of Object.entries(allocation)) {
+    const land = ALL_LANDS.find(l => l.id === id);
+    if (!land || count <= 0) continue;
+    for (const c of land.colors) sources[c] += count;
+  }
+  return sources;
+}
+
+/* ── Score d'une mana base (0–100) ── */
+function scoreManaBase(sources, requirements, totalLands) {
+  const activeColors = ['W','U','B','R','G'].filter(c => requirements[c] > 0);
+  if (activeColors.length === 0) return 0;
+
+  let score = 100;
+  for (const c of activeColors) {
+    const ratio = sources[c] / requirements[c];
+    if (ratio < 1) {
+      // Pénalité : chaque % manquant coûte des points
+      score -= (1 - ratio) * 45;
+    } else {
+      // Bonus léger pour les surplus
+      score += Math.min((ratio - 1) * 4, 4);
+    }
+  }
+  return Math.round(Math.max(0, Math.min(100, score)) * 10) / 10;
+}
+
+/* ── Générateur d'une mana base selon une stratégie ── */
+function buildManaBase(availableLands, requirements, totalLands, strategy) {
+  const activeColors = ['W','U','B','R','G'].filter(c => requirements[c] > 0);
+  const allocation   = {};
+  const remaining    = { lands: totalLands };
+
+  // Copie mutable des cibles
+  const targets = Object.fromEntries(activeColors.map(c => [c, requirements[c]]));
+  const sources  = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+
+  // Trier les lands selon la stratégie
+  const sorted = [...availableLands].sort((a, b) => {
+    // Priorité 1 : untapped si stratégie aggro
+    if (strategy.preferUntapped) {
+      if (a.untapped !== b.untapped) return b.untapped ? 1 : -1;
+    }
+    // Priorité 2 : triomes en tête si stratégie triome
+    if (strategy.preferTriome) {
+      if (a.type === 'triome' && b.type !== 'triome') return -1;
+      if (b.type === 'triome' && a.type !== 'triome') return  1;
+    }
+    // Priorité 3 : score combiné (somme des déficits couverts)
+    const aVal = a.colors.reduce((s, c) => s + Math.max(0, targets[c] || 0), 0);
+    const bVal = b.colors.reduce((s, c) => s + Math.max(0, targets[c] || 0), 0);
+    // Secondaire : préférer les lands qui couvrent MOINS de couleurs (plus efficaces)
+    if (bVal !== aVal) return bVal - aVal;
+    return a.colors.length - b.colors.length;
+  });
+
+  // Phase 1 : remplir les besoins couleur par couleur
+  for (const land of sorted) {
+    if (remaining.lands <= 0) break;
+
+    // Combien ce land aide-t-il à couvrir les déficits ?
+    const deficit = land.colors.reduce((max, c) => {
+      return Math.max(max, Math.max(0, (targets[c] || 0) - sources[c]));
+    }, 0);
+
+    if (deficit <= 0) continue;
+
+    const count = Math.min(4, remaining.lands, Math.ceil(deficit));
+    if (count <= 0) continue;
+
+    allocation[land.id] = count;
+    for (const c of land.colors) sources[c] += count;
+    remaining.lands -= count;
+  }
+
+  // Phase 2 : remplir le reste avec des basics de la couleur principale
+  if (remaining.lands > 0) {
+    const mainColor = activeColors.reduce((a, b) =>
+      requirements[a] >= requirements[b] ? a : b
+    );
+    const basicId = `basic-${colorToBasicId(mainColor)}`;
+    if (availableLands.find(l => l.id === basicId)) {
+      allocation[basicId] = (allocation[basicId] || 0) + remaining.lands;
+      sources[mainColor]  = (sources[mainColor]  || 0) + remaining.lands;
+      remaining.lands = 0;
+    } else {
+      // Fallback : prendre n'importe quel basic disponible
+      const anyBasic = availableLands.find(l => l.type === 'basicland');
+      if (anyBasic) {
+        allocation[anyBasic.id] = (allocation[anyBasic.id] || 0) + remaining.lands;
+        for (const c of anyBasic.colors) sources[c] += remaining.lands;
+        remaining.lands = 0;
+      }
+    }
+  }
+
+  return { allocation, sources };
+}
+
+function colorToBasicId(color) {
+  return { W: 'plains', U: 'island', B: 'swamp', R: 'mountain', G: 'forest' }[color] || 'plains';
+}
+
+/* ── Point d'entrée : génère N mana bases classées ── */
+function generateManaBases(availableLands, requirements, totalLands, n = 3) {
+  const strategies = [
+    { name: 'Équilibrée',      preferUntapped: false, preferTriome: false },
+    { name: 'Aggro (untapped)',preferUntapped: true,  preferTriome: false },
+    { name: 'Triome-first',    preferUntapped: false, preferTriome: true  },
+  ];
+
+  const results = strategies.slice(0, n).map(strat => {
+    const { allocation, sources } = buildManaBase(availableLands, requirements, totalLands, strat);
+    const score = scoreManaBase(sources, requirements, totalLands);
+    return { name: strat.name, allocation, sources, score };
+  });
+
+  return results.sort((a, b) => b.score - a.score);
+}

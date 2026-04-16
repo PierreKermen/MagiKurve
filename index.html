@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTG Mana Base Optimizer — Karsten Method</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Mana Base Optimizer</h1>
+      <p class="subtitle">Méthode Frank Karsten · Standard 60 cartes</p>
+    </header>
+
+    <main>
+      <!-- Step 1: Decklist -->
+      <section class="card" id="section-deck">
+        <p class="section-label">1. Decklist (format Arena / MTGO)</p>
+        <textarea id="decklist" placeholder="4 Sunpetal Grove&#10;4 Llanowar Elves&#10;2 Ajani, Strength of the Pride&#10;...&#10;&#10;Collez votre liste — les lands existantes sont ignorées."></textarea>
+      </section>
+
+      <!-- Step 2: Land count + format -->
+      <section class="card" id="section-config">
+        <div class="config-row">
+          <div class="field-group">
+            <label for="landCount">Nombre de lands</label>
+            <input type="number" id="landCount" value="24" min="18" max="30" />
+          </div>
+          <div class="field-group">
+            <label>Format</label>
+            <div class="format-badge">Standard</div>
+          </div>
+        </div>
+
+        <p class="section-label" style="margin-top:1rem;">Types de lands disponibles</p>
+        <div class="land-toggles" id="landToggles"></div>
+      </section>
+
+      <!-- CTA -->
+      <div class="cta-row">
+        <button class="btn-primary" id="calcBtn" onclick="calculate()">Calculer la mana base</button>
+        <span id="status"></span>
+      </div>
+
+      <!-- Results -->
+      <div id="results"></div>
+    </main>
+
+    <footer>
+      <p>Basé sur <a href="https://www.channelfireball.com/articles/how-many-colored-mana-sources-do-you-need-to-consistently-cast-your-spells-a-guilds-of-ravnica-update/" target="_blank">l'article de Frank Karsten</a> · Données de cartes via <a href="https://scryfall.com" target="_blank">Scryfall API</a></p>
+    </footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="karsten.js"></script>
+  <script src="optimizer.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
