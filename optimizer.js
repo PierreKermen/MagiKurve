@@ -4,9 +4,17 @@
 
 const SCRYFALL_DELAY_MS = 80; // respecter le rate limit Scryfall
 
-/* ── Parsing de la decklist ── */
+/* ── Parsing de la decklist ──
+   Formats supportés :
+   - "4 Lightning Helix"
+   - "4x Lightning Helix"
+   - "4 Lightning Helix (MKM) 426"
+   - "4x Lightning Helix (MKM) 426 *F*"
+   - "4 Ashling, Rekindled // Ashling, Rimebound (ECL) 290"
+   Les doublons (même nom) sont fusionnés.
+*/
 function parseDecklist(text) {
-  const cards = [];
+  const cardMap = new Map();
   const basicNames = new Set([
     "plains",
     "island",
@@ -17,25 +25,33 @@ function parseDecklist(text) {
   const knownLandIds = new Set(ALL_LANDS.map((l) => l.name.toLowerCase()));
 
   for (const raw of text.trim().split("\n")) {
-    const line = raw.trim();
-    if (!line || line.startsWith("//") || line === "") continue;
-
-    // Ignorer les séparateurs de sections Arena ("Deck", "Sideboard", etc.)
+    let line = raw.trim();
+    if (!line || line === "") continue;
     if (/^(deck|sideboard|commander|companion)$/i.test(line)) continue;
+    if (line.startsWith("//")) continue;
 
-    const m = line.match(/^(\d+)\s+(.+?)(\s+\(\w+\)\s+\d+)?$/);
+    // Supprimer le flag foil (*F*, *f*, etc.)
+    line = line.replace(/\s*\*\w+\*\s*$/, "").trim();
+
+    // Regex : quantité (avec ou sans "x") + nom + (optionnel) code set + numéro
+    const m = line.match(/^(\d+)x?\s+(.+?)(?:\s+\([A-Z0-9]+\)\s+\d+)?$/i);
     if (!m) continue;
 
     const qty = parseInt(m[1], 10);
-    const name = m[2].trim();
+    let name = m[2].trim();
 
-    // Ignorer les basics et les lands connues
+    // Cartes double-face : garder seulement le face avant
+    if (name.includes(" // ")) {
+      name = name.split(" // ")[0].trim();
+    }
+
     if (basicNames.has(name.toLowerCase())) continue;
     if (knownLandIds.has(name.toLowerCase())) continue;
 
-    cards.push({ qty, name });
+    cardMap.set(name, (cardMap.get(name) || 0) + qty);
   }
-  return cards;
+
+  return Array.from(cardMap.entries()).map(([name, qty]) => ({ name, qty }));
 }
 
 /* ── Appel Scryfall ── */
