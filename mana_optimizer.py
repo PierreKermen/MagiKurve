@@ -6,7 +6,7 @@ from ortools.sat.python import cp_model
 
 def create_manabase(available_lands, requirements, total_lands, strategy):
     """
-    Optimized mana base generator using OR-Tools CP-SAT with lexicographic objectives.
+    Optimized mana base generator using OR-Tools CP-SAT with lexicographic objectives
     """
     model = cp_model.CpModel()
     colors = ["W", "U", "B", "R", "G"]
