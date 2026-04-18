@@ -1,7 +1,7 @@
 ---
 name: Feature Request
 about: Suggest an idea for this project or request a new feature
-title: '[FEAT] '
+title: '[Feature] <Short, descriptive summary>'
 labels: 'type: feature'
 assignees: ''
 

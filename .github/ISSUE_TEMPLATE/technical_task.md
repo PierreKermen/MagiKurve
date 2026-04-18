@@ -1,7 +1,7 @@
 ---
 name: Technical Task
 about: For technical debt, refactoring, or infrastructure work
-title: '[TECH] '
+title: '[Chore] <Short, descriptive summary>'
 labels: 'type: chore'
 assignees: ''
 
