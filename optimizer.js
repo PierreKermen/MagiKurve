@@ -227,23 +227,41 @@ async function CPManaBase(availableLands, requirements, totalLands, strategy) {
 }
 
 /* ── Point d'entrée : génère N mana bases classées ── */
-function generateManaBases(availableLands, requirements, totalLands, n = 3) {
+async function generateManaBases(availableLands, requirements, totalLands, n = 3) {
   const strategies = [
     { name: "Équilibrée", preferUntapped: false, preferTriome: false },
     { name: "Aggro (untapped)", preferUntapped: true, preferTriome: false },
     { name: "Triome-first", preferUntapped: false, preferTriome: true },
   ];
 
-  const results = strategies.slice(0, n).map(async (strat) => {
-      const {allocation, sources} = await CPManaBase(
-          availableLands,
-          requirements,
-          totalLands,
-          strat,
+  const resultsPromises = strategies.slice(0, n).map(async (strat) => {
+    try {
+      const result = await CPManaBase(
+        availableLands,
+        requirements,
+        totalLands,
+        strat,
       );
-      const score = scoreManaBase(sources, requirements, totalLands);
-      return {name: strat.name, allocation, sources, score};
+      
+      // Validation : si le bridge retourne une erreur ou des données incomplètes
+      if (!result || result.error || !result.sources) {
+        console.warn(`Optimization failed for strategy ${strat.name}:`, result?.error || "Incomplete data");
+        // Fallback local en cas d'échec du bridge
+        const fallback = buildManaBase(availableLands, requirements, totalLands, strat);
+        const score = scoreManaBase(fallback.sources, requirements, totalLands);
+        return { name: strat.name, ...fallback, score };
+      }
+
+      const score = scoreManaBase(result.sources, requirements, totalLands);
+      return { name: strat.name, ...result, score };
+    } catch (e) {
+      console.error(`Strategy ${strat.name} failed:`, e);
+      const fallback = buildManaBase(availableLands, requirements, totalLands, strat);
+      const score = scoreManaBase(fallback.sources, requirements, totalLands);
+      return { name: strat.name, ...fallback, score };
+    }
   });
 
+  const results = await Promise.all(resultsPromises);
   return results.sort((a, b) => b.score - a.score);
 }

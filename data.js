@@ -27,6 +27,32 @@
  * ──────────────────────────────────────────────────────────────────────────
  */
 
+var COLOR_NAMES = {
+  W: "Blanc",
+  U: "Bleu",
+  B: "Noir",
+  R: "Rouge",
+  G: "Vert",
+};
+
+var TYPE_LABELS = {
+  basicland: "Basics",
+  fetchland: "Fetch Lands",
+  shockland: "Shock Lands",
+  checkland: "Check Lands",
+  fastland: "Fast Lands",
+  slowland: "Slow Lands",
+  gainland: "Gain Lands",
+  scryingland: "Scry Lands",
+  triome: "Tri-Lands",
+  dualland: "Dual / Pathway Lands",
+  tapland: "Tap Lands",
+  other: "Other Lands",
+};
+
+var LAND_TYPE_NAMES = TYPE_LABELS;
+
+
 // ── Ordre canonique des formats ─────────────────────────────────────────────
 const FORMAT_BITS = [
   "standard", // bit 0  —     1
@@ -70,7 +96,7 @@ function classifyLand(oracleText, typeLine) {
   const o = (oracleText || "").toLowerCase();
   const t = (typeLine || "").toLowerCase();
 
-  if (t.includes("basic land")) return "basic";
+  if (t.includes("basic land")) return "basicland";
   if (o.includes("search your library") && o.includes("sacrifice"))
     return "fetchland";
 
@@ -123,7 +149,7 @@ function classifyLand(oracleText, typeLine) {
     t.includes("land") &&
     o.includes("enters the battlefield tapped")
   )
-    return "triland";
+    return "triome";
 
   // Tout le reste : engagé sans condition
   if (
@@ -303,22 +329,7 @@ function getAvailableLands(selectedTypes, format) {
   });
 }
 
-// ── Labels UI pour les types de lands ────────────────────────────────────────
 
-const LAND_TYPE_NAMES = {
-  basic: "Basics",
-  fetchland: "Fetch Lands",
-  shockland: "Shock Lands",
-  checkland: "Check Lands",
-  fastland: "Fast Lands",
-  slowland: "Slow Lands",
-  gainland: "Gain Lands",
-  scryingland: "Scry Lands",
-  triland: "Tri-Lands",
-  dualland: "Dual / Pathway Lands",
-  tapland: "Tap Lands",
-  other: "Other Lands",
-};
 
 // ── parseDecklist ─────────────────────────────────────────────────────────────
 
