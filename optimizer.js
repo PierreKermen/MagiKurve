@@ -89,6 +89,7 @@ function getAvailableLands(requirements, selectedTypes) {
 
 /* ── Calcul des sources fournies par une allocation ── */
 function computeSources(allocation) {
+    //TODO: confirm usage
   const sources = { W: 0, U: 0, B: 0, R: 0, G: 0 };
   for (const [id, count] of Object.entries(allocation)) {
     const land = ALL_LANDS.find((l) => l.id === id);
@@ -204,24 +205,63 @@ function colorToBasicId(color) {
   );
 }
 
+/* ── CPManaBase (Appel au pont Python) ── */
+async function CPManaBase(availableLands, requirements, totalLands, strategy) {
+  try {
+    const response = await fetch("http://localhost:8000/optimize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        available_lands: availableLands,
+        requirements: requirements,
+        total_lands: totalLands,
+        strategy: strategy,
+      }),
+    });
+    if (!response.ok) throw new Error("Erreur lors de l'appel Python");
+    return await response.json();
+  } catch (e) {
+    console.error("Python bridge failed, falling back to JS:", e);
+    return buildManaBase(availableLands, requirements, totalLands, strategy);
+  }
+}
+
 /* ── Point d'entrée : génère N mana bases classées ── */
-function generateManaBases(availableLands, requirements, totalLands, n = 3) {
+async function generateManaBases(availableLands, requirements, totalLands, n = 3) {
   const strategies = [
     { name: "Équilibrée", preferUntapped: false, preferTriome: false },
     { name: "Aggro (untapped)", preferUntapped: true, preferTriome: false },
     { name: "Triome-first", preferUntapped: false, preferTriome: true },
   ];
 
-  const results = strategies.slice(0, n).map((strat) => {
-    const { allocation, sources } = buildManaBase(
-      availableLands,
-      requirements,
-      totalLands,
-      strat,
-    );
-    const score = scoreManaBase(sources, requirements, totalLands);
-    return { name: strat.name, allocation, sources, score };
+  const resultsPromises = strategies.slice(0, n).map(async (strat) => {
+    try {
+      const result = await CPManaBase(
+        availableLands,
+        requirements,
+        totalLands,
+        strat,
+      );
+      
+      // Validation : si le bridge retourne une erreur ou des données incomplètes
+      if (!result || result.error || !result.sources) {
+        console.warn(`Optimization failed for strategy ${strat.name}:`, result?.error || "Incomplete data");
+        // Fallback local en cas d'échec du bridge
+        const fallback = buildManaBase(availableLands, requirements, totalLands, strat);
+        const score = scoreManaBase(fallback.sources, requirements, totalLands);
+        return { name: strat.name, ...fallback, score };
+      }
+
+      const score = scoreManaBase(result.sources, requirements, totalLands);
+      return { name: strat.name, ...result, score };
+    } catch (e) {
+      console.error(`Strategy ${strat.name} failed:`, e);
+      const fallback = buildManaBase(availableLands, requirements, totalLands, strat);
+      const score = scoreManaBase(fallback.sources, requirements, totalLands);
+      return { name: strat.name, ...fallback, score };
+    }
   });
 
+  const results = await Promise.all(resultsPromises);
   return results.sort((a, b) => b.score - a.score);
 }

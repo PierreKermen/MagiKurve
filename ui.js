@@ -92,19 +92,21 @@ async function calculate() {
   }
 
   setStatus(status, "Calcul Karsten…");
+  try {
+    const requirements = computeColorRequirements(cardData, landCount);
+    const availableLands = getAvailableLands(requirements, selectedTypes);
+    const manaBases = await generateManaBases(availableLands, requirements, landCount);
 
-  /* ── Calcul ── */
-  const requirements = computeColorRequirements(cardData, landCount);
-  const availableLands = getAvailableLands(requirements, selectedTypes);
-  const manaBases = generateManaBases(availableLands, requirements, landCount);
-
-  setStatus(status, "");
-  btn.disabled = false;
-
-  /* ── Rendu ── */
-  results.innerHTML =
-    renderRequirements(requirements, landCount, cardData.length) +
-    renderManaBases(manaBases, requirements);
+    results.innerHTML =
+      renderRequirements(requirements, landCount, cardData.length) +
+      renderManaBases(manaBases, requirements);
+  } catch (e) {
+    console.error("Calculation failed:", e);
+    results.innerHTML = '<div class="error">Une erreur est survenue lors du calcul.</div>';
+  } finally {
+    setStatus(status, "");
+    btn.disabled = false;
+  }
 }
 
 /* ── Helpers ── */
