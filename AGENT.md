@@ -52,3 +52,54 @@ MagiKurve operates as a hybrid application:
 - **Async/Await**: Preferred over raw Promises. 
 - **External APIs**: Always respect external rate limits (e.g., the 80ms delay for Scryfall in `optimizer.js`).
 - **Data Structures**: Prefer modern ES6+ structures like `Set` and `Map` for data deduplication and frequency mapping.
+
+## Test decklists
+
+### Simple Mono colored deck
+
+4 Earthbender Ascension
+4 Mightform Harmonizer
+4 Esper Origins
+1 Archdruid's Charm
+2 Meltstrider's Resolve
+1 Royal Treatment
+4 Sazh's Chocobo
+2 Mossborn Hydra
+4 Icetill Explorer
+4 Llanowar Elves
+4 Badgermole Cub
+24 Forest
+
+This one does not require other lands, but could also be use to test the integrations of mana dorks.
+
+### Complex colored deck
+
+2x Authority of the Consuls
+4x Day of Judgment
+1x Demolition Field
+1x Emeritus of Ideation
+4x Erode
+4x Flow State
+4x Great Hall of the Biblioplex
+4x Hallowed Fountain
+1x Island
+4x Lightning Helix
+4x Meticulous Archive
+1x Mountain
+4x No More Lies
+1x Petrified Hamlet
+1x Plains
+4x Price of Freedom
+1x Restless Anchorage
+2x Seam Rip
+2x Stock Up
+4x Stormcarved Coast
+2x Sundown Pass
+2x Three Steps Ahead
+3x Wan Shi Tong, Librarian
+
+Sideboard:
+4x Exorcise
+3x Ghost Vacuum
+
+This deck is more complex due to the number of colors and the need to produce multiple colors of mana. It also includes lands that enter the battlefield tapped, which need to be accounted for in the optimization. It also includes lands that can produce multiple colors of mana depending on the gamestate. It also include cards with non trivial mana costs that could be manually overide. Finally, it also encompass a test sideboard to not mix up the maindeck and sideboard.
