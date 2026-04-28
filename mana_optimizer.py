@@ -1,105 +1,137 @@
+"""Mana base optimizer using OR-Tools CP-SAT with lexicographic objectives."""
+
 import json
 import sys
-import os
-import csv
+
 from ortools.sat.python import cp_model
 
-def create_manabase(available_lands, requirements, total_lands, strategy):
+
+COLORS = ["W", "U", "B", "R", "G"]
+
+
+def create_manabase(
+    available_lands: list[dict],
+    requirements: dict[str, int],
+    total_lands: int,
+    strategy: dict,
+    fixed_sources: dict[str, int] | None = None,
+) -> dict:
+    """Builds an optimal mana base via three-phase lexicographic CP-SAT.
+
+    Args:
+        available_lands: Pool of lands the solver can pick from.
+        requirements: Karsten source requirements per color (full, before deductions).
+        total_lands: Number of land slots to fill (already excluding fixed lands).
+        strategy: Dict with optional keys 'preferUntapped', etc.
+        fixed_sources: Sources already provided by fixed (user-locked) lands.
+
+    Returns:
+        Dict with 'allocation' and 'sources', or 'error' on failure.
     """
-    Optimized mana base generator using OR-Tools CP-SAT with lexicographic objectives
-    """
+    if fixed_sources is None:
+        fixed_sources = {c: 0 for c in COLORS}
+
+    # Effective requirements = Karsten target minus what fixed lands provide
+    effective_req = {
+        c: max(0, requirements.get(c, 0) - fixed_sources.get(c, 0))
+        for c in COLORS
+    }
+
     model = cp_model.CpModel()
-    colors = ["W", "U", "B", "R", "G"]
-    
-    # 1. Variables: Number of each land type
+
+    # 1. Variables: count of each land (basics uncapped, others ≤ 4)
     land_vars = {}
     for i, land in enumerate(available_lands):
-        is_basic = land.get('type') == 'basicland'
+        is_basic = land.get("type") in ("basic", "basicland")
         limit = total_lands if is_basic else 4
         land_vars[i] = model.new_int_var(0, limit, f"land_{i}")
-        
-    # 2. Constraint: Total number of lands
+
+    # 2. Total lands constraint
     model.add(sum(land_vars.values()) == total_lands)
-    
+
     # 3. Sources per color
-    sources = {color: model.new_int_var(0, total_lands, f"source_{color}") for color in colors}
-    for color in colors:
-        color_contribution = []
-        for i, land in enumerate(available_lands):
-            if color in land.get('colors', []):
-                color_contribution.append(land_vars[i])
-        model.add(sources[color] == sum(color_contribution))
-        
-    # 4. Gaps (lexicographic priority 1 & 2)
-    gaps = {color: model.new_int_var(0, total_lands, f"gap_{color}") for color in colors}
-    for color in colors:
-        model.add(gaps[color] >= requirements.get(color, 0) - sources[color])
+    sources = {
+        c: model.new_int_var(0, total_lands, f"source_{c}") for c in COLORS
+    }
+    for color in COLORS:
+        contributions = [
+            land_vars[i]
+            for i, land in enumerate(available_lands)
+            if color in land.get("colors", [])
+        ]
+        model.add(sources[color] == sum(contributions))
 
-    # --- Phase 1: Minimize Maximum Deviation ---
-    max_gap = model.new_int_var(0, total_lands, "max_gap")
-    model.add_max_equality(max_gap, [gaps[c] for c in colors])
-    model.minimize(max_gap)
+    # 4. Gaps per color (how many sources still missing vs effective requirement)
+    gaps = {
+        c: model.new_int_var(0, total_lands, f"gap_{c}") for c in COLORS
+    }
+    for color in COLORS:
+        model.add(gaps[color] >= effective_req[color] - sources[color])
+
     solver = cp_model.CpSolver()
+
+    # --- Phase 1: Minimize maximum gap across all colors ---
+    max_gap = model.new_int_var(0, total_lands, "max_gap")
+    model.add_max_equality(max_gap, [gaps[c] for c in COLORS])
+    model.minimize(max_gap)
+
     status = solver.solve(model)
-    if status in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
-        model.add(max_gap <= int(solver.value(max_gap)))
-    else:
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         return {"error": "Phase 1 optimization failed"}
+    model.add(max_gap <= int(solver.value(max_gap)))
 
-    # --- Phase 2: Minimize Overall Missing Sources ---
-    total_missing = model.new_int_var(0, total_lands * 5, "total_missing")
-    model.add(total_missing == sum(gaps.values()))
-    model.minimize(sum(gaps.values()))
+    # --- Phase 2: Minimize total missing sources ---
+    model.minimize(sum(gaps[c] for c in COLORS))
     status = solver.solve(model)
-    if status in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
-        model.add(sum(gaps.values()) <= sum(int(solver.value(gaps[color])) for color in colors))
-    else:
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         return {"error": "Phase 2 optimization failed"}
+    model.add(
+        sum(gaps[c] for c in COLORS)
+        <= sum(int(solver.value(gaps[c])) for c in COLORS)
+    )
 
-    # --- Phase 3: Minimize Disruptions --- Simplified linear aggregated version
-    disruption_cost = model.new_int_var(-total_lands * 100, total_lands * 100, "disruption_cost")
+    # --- Phase 3: Minimize disruption cost (strategy preferences) ---
     costs = []
     for i, land in enumerate(available_lands):
-        land_cost = 0
-        if strategy.get('preferUntapped') and not land.get('untapped', False):
-            land_cost += 10
-        if strategy.get('preferTriome') and land.get('type') != 'triland' and land.get('type') != 'basicland':
-            land_cost += 5
-        if land.get('type') == 'basicland':
-            land_cost -= 1
-        
-        costs.append(land_vars[i] * land_cost)
-    
-    model.add(disruption_cost == sum(costs))
-    model.minimize(disruption_cost)
-    
+        cost = 0
+        if strategy.get("preferUntapped") and not land.get("untapped", False):
+            cost += 10
+        if land.get("type") in ("basic", "basicland"):
+            cost -= 1
+        costs.append(land_vars[i] * cost)
+
+    disruption = model.new_int_var(
+        -total_lands * 100, total_lands * 100, "disruption"
+    )
+    model.add(disruption == sum(costs))
+    model.minimize(disruption)
+
     status = solver.solve(model)
-    
-    if status in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
-        allocation = {}
-        final_sources = {c: 0 for c in colors}
-        for i, land in enumerate(available_lands):
-            count = int(solver.value(land_vars[i]))
-            if count > 0:
-                allocation[land['id']] = count
-                for color in land.get('colors', []):
-                    final_sources[color] += count
-        
-        return {
-            "allocation": allocation,
-            "sources": final_sources,
-        }
-    else:
-        return {"error": "Final phase optimization failed"}
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        return {"error": "Phase 3 optimization failed"}
+
+    # Extract solution
+    allocation = {}
+    final_sources = {c: 0 for c in COLORS}
+    for i, land in enumerate(available_lands):
+        count = int(solver.value(land_vars[i]))
+        if count > 0:
+            allocation[land["name"]] = count
+            for color in land.get("colors", []):
+                final_sources[color] += count
+
+    return {"allocation": allocation, "sources": final_sources}
+
 
 if __name__ == "__main__":
     try:
         input_data = json.load(sys.stdin)
         result = create_manabase(
-            input_data['available_lands'],
-            input_data['requirements'],
-            input_data['total_lands'],
-            input_data['strategy']
+            input_data["available_lands"],
+            input_data["requirements"],
+            input_data["total_lands"],
+            input_data["strategy"],
+            input_data.get("fixed_sources"),
         )
         print(json.dumps(result))
     except Exception as e:

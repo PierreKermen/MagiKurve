@@ -36,6 +36,10 @@
   padding: 0;
 }
 
+.hidden {
+  display: none !important;
+}
+
 body {
   font-family: "Jost", sans-serif;
   background: var(--bg);
@@ -235,7 +239,26 @@ input[type="number"]:focus {
   cursor: not-allowed;
 }
 
-#status {
+.btn-secondary {
+  background: transparent;
+  color: var(--gold);
+  border: 0.5px solid rgba(201, 168, 76, 0.45);
+  border-radius: var(--radius-md);
+  padding: 9px 22px;
+  font-family: "Jost", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-secondary:hover {
+  background: rgba(201, 168, 76, 0.08);
+  border-color: rgba(201, 168, 76, 0.65);
+}
+
+#status,
+#parseStatus {
   font-size: 12px;
   color: var(--text-muted);
   letter-spacing: 0.04em;
@@ -315,6 +338,14 @@ input[type="number"]:focus {
   color: var(--text-muted);
   letter-spacing: 0.06em;
   margin-top: 2px;
+}
+
+.color-req-card .req-fixed {
+  font-size: 9px;
+  color: var(--gold);
+  opacity: 0.7;
+  margin-top: 3px;
+  letter-spacing: 0.04em;
 }
 
 /* ── Result cards ── */
@@ -493,6 +524,74 @@ input[type="number"]:focus {
   font-size: 12px;
   color: var(--text-muted);
   line-height: 1.6;
+}
+
+/* ── Review grid ── */
+.review-grid {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 0;
+  margin-top: 10px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.review-header {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 0.5px solid var(--border);
+}
+.review-header-right {
+  text-align: right;
+}
+
+.review-cell {
+  padding: 7px 12px;
+  font-size: 13px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+}
+.review-grid > .review-cell:nth-last-child(-n+4) {
+  border-bottom: none;
+}
+
+.review-name {
+  color: var(--text);
+}
+.review-pips {
+  display: flex;
+  gap: 3px;
+}
+.review-type {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.review-qty {
+  justify-content: flex-end;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* ── Fixed land tag ── */
+.land-row-fixed {
+  background: rgba(201, 168, 76, 0.04);
+}
+.fixed-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--gold);
+  margin-left: 6px;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
 }
 
 /* ── Footer ── */

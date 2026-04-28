@@ -15,9 +15,10 @@ class ManaBridgeHandler(http.server.SimpleHTTPRequestHandler):
                     input_data['available_lands'],
                     input_data['requirements'],
                     input_data['total_lands'],
-                    input_data['strategy']
+                    input_data['strategy'],
+                    input_data.get('fixed_sources'),
                 )
-                
+
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
@@ -25,6 +26,7 @@ class ManaBridgeHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps(result).encode('utf-8'))
             except Exception as e:
                 self.send_response(500)
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(str(e).encode('utf-8'))
         else:

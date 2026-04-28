@@ -1,61 +1,120 @@
-import unittest
+"""Tests for mana_optimizer.create_manabase with fixed_sources support."""
+
+import pytest
+
 from mana_optimizer import create_manabase
 
-class TestManaOptimizerORTools(unittest.TestCase):
-    def setUp(self):
-        self.available_lands = [
-            {"id": "plains", "name": "Plains", "type": "basicland", "colors": ["W"]},
-            {"id": "island", "name": "Island", "type": "basicland", "colors": ["U"]},
-            {"id": "mountain", "name": "Mountain", "type": "basicland", "colors": ["R"]},
-            {"id": "hallowed_fountain", "name": "Hallowed Fountain", "type": "shockland", "colors": ["W", "U"], "untapped": True},
-            {"id": "glacial_fortress", "name": "Glacial Fortress", "type": "checkland", "colors": ["W", "U"], "untapped": True},
-            {"id": "raugrin_triome", "name": "Raugrin Triome", "type": "triome", "colors": ["W", "U", "R"], "untapped": False}
-        ]
 
-    def test_lexicographic_sources(self):
-        # Requirements that are hard to meet: 18 W, 18 U in 24 lands
-        requirements = {"W": 18, "U": 18, "B": 0, "R": 0, "G": 0}
-        total_lands = 24
-        strategy = {"preferUntapped": True}
-        
-        result = create_manabase(self.available_lands, requirements, total_lands, strategy)
-        
-        self.assertNotIn("error", result)
-        # Should have 4 Hallowed Fountain and 4 Glacial Fortress to maximize duals
-        self.assertEqual(result["allocation"].get("hallowed_fountain"), 4)
-        self.assertEqual(result["allocation"].get("glacial_fortress"), 4)
-        
-        # Total lands should be exactly 24
-        self.assertEqual(sum(result["allocation"].values()), 24)
+@pytest.fixture()
+def basic_pool():
+    """Pool with basics + Azorius duals + a triome."""
+    return [
+        {"name": "Plains", "type": "basicland", "colors": ["W"]},
+        {"name": "Island", "type": "basicland", "colors": ["U"]},
+        {"name": "Mountain", "type": "basicland", "colors": ["R"]},
+        {
+            "name": "Hallowed Fountain",
+            "type": "shockland",
+            "colors": ["W", "U"],
+            "untapped": True,
+        },
+        {
+            "name": "Meticulous Archive",
+            "type": "surveilland",
+            "colors": ["W", "U"],
+            "untapped": False,
+        }
+    ]
 
-    def test_strategy_untapped(self):
-        # Prefer untapped should avoid Triome if possible
-        requirements = {"W": 10, "U": 10, "R": 2, "B": 0, "G": 0}
-        total_lands = 24
-        strategy = {"preferUntapped": True}
-        
-        result = create_manabase(self.available_lands, requirements, total_lands, strategy)
-        # Raugrin Triome is tapped, should be avoided if basics/duals can cover it
-        self.assertEqual(result["allocation"].get("raugrin_triome", 0), 0)
 
-    def test_strategy_triome(self):
-        # Prefer triome should include Raugrin Triome
-        requirements = {"W": 10, "U": 10, "R": 5, "B": 0, "G": 0}
-        total_lands = 24
-        strategy = {"preferTriome": True}
-        
-        result = create_manabase(self.available_lands, requirements, total_lands, strategy)
-        self.assertGreater(result["allocation"].get("raugrin_triome", 0), 0)
+def test_total_land_count_matches(basic_pool: list[dict]) -> None:
+    """The solver should allocate exactly the requested number of lands."""
+    result = create_manabase(
+        basic_pool,
+        {"W": 14, "U": 14, "B": 0, "R": 0, "G": 0},
+        24,
+        {},
+    )
+    assert "error" not in result
+    assert sum(result["allocation"].values()) == 24
 
-    def test_max_4_limit(self):
-        # Non-basics should be limited to 4
-        requirements = {"W": 20, "U": 20, "B": 0, "R": 0, "G": 0}
-        total_lands = 24
-        strategy = {}
-        
-        result = create_manabase(self.available_lands, requirements, total_lands, strategy)
-        self.assertLessEqual(result["allocation"].get("hallowed_fountain", 0), 4)
-        self.assertLessEqual(result["allocation"].get("glacial_fortress", 0), 4)
 
-if __name__ == "__main__":
-    unittest.main()
+def test_nonbasics_capped_at_four(basic_pool: list[dict]) -> None:
+    """Non-basic lands must not exceed 4 copies."""
+    result = create_manabase(
+        basic_pool,
+        {"W": 20, "U": 20, "B": 0, "R": 0, "G": 0},
+        24,
+        {},
+    )
+    assert result["allocation"].get("Hallowed Fountain", 0) <= 4
+    assert result["allocation"].get("Meticulous Archive", 0) <= 4
+
+
+def test_strategy_prefers_untapped(basic_pool: list[dict]) -> None:
+    """Aggro strategy should avoid tapped lands when alternatives exist."""
+    result = create_manabase(
+        basic_pool,
+        {"W": 10, "U": 10, "R": 2, "B": 0, "G": 0},
+        24,
+        {"preferUntapped": True},
+    )
+    assert result["allocation"].get("Meticulous Archive", 0) == 0
+
+
+def test_fixed_sources_reduce_effective_requirements(basic_pool: list[dict]) -> None:
+    """Fixed sources should reduce the pressure on the solver.
+
+    If requirements are W:14, U:14 and fixed lands already provide
+    W:4, U:4, the solver only needs to cover W:10, U:10 in 20 slots.
+    """
+    result_without = create_manabase(
+        basic_pool,
+        {"W": 14, "U": 14, "B": 0, "R": 0, "G": 0},
+        24,
+        {},
+        fixed_sources=None,
+    )
+    result_with = create_manabase(
+        basic_pool,
+        {"W": 14, "U": 14, "B": 0, "R": 0, "G": 0},
+        20,
+        {},
+        fixed_sources={"W": 4, "U": 4, "B": 0, "R": 0, "G": 0},
+    )
+
+    assert "error" not in result_with
+    assert sum(result_with["allocation"].values()) == 20
+
+    # With 4 fewer slots but 4 fixed sources each, solver should still cover.
+    total_w = result_with["sources"]["W"] + 4
+    total_u = result_with["sources"]["U"] + 4
+    assert total_w >= 14
+    assert total_u >= 14
+
+
+def test_fully_fixed_means_zero_remaining() -> None:
+    """When all requirements are met by fixed lands, solver fills 0 slots."""
+    pool = [{"name": "Plains", "type": "basicland", "colors": ["W"]}]
+    result = create_manabase(
+        pool,
+        {"W": 14, "U": 0, "B": 0, "R": 0, "G": 0},
+        0,
+        {},
+        fixed_sources={"W": 14, "U": 0, "B": 0, "R": 0, "G": 0},
+    )
+    assert "error" not in result
+    assert sum(result["allocation"].values()) == 0
+
+
+def test_lexicographic_maximizes_duals(basic_pool: list[dict]) -> None:
+    """High dual requirements should maximize Hallowed Fountain + Meticulous Archive."""
+    result = create_manabase(
+        basic_pool,
+        {"W": 18, "U": 18, "B": 0, "R": 0, "G": 0},
+        24,
+        {"preferUntapped": True},
+    )
+    assert "error" not in result
+    assert result["allocation"].get("Hallowed Fountain") == 4
+    assert result["allocation"].get("Meticulous Archive") == 4

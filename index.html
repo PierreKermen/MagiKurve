@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ManaKurve — Optimize your MTG Standard mana base using the Frank Karsten method and CP-SAT solver." />
   <title>ManaKurve — Mana Base Optimizer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -12,21 +13,33 @@
   <div id="app">
     <header>
       <h1>ManaKurve</h1>
-      <p class="subtitle">Méthode Frank Karsten · Standard 60 cartes</p>
+      <p class="subtitle">Frank Karsten Method · Standard 60 cards</p>
     </header>
 
     <main>
       <!-- Step 1: Decklist -->
       <section class="card" id="section-deck">
-        <p class="section-label">1. Decklist (format Arena / MTGO)</p>
-        <textarea id="decklist" placeholder="4 Sunpetal Grove&#10;4 Llanowar Elves&#10;2 Ajani, Strength of the Pride&#10;...&#10;&#10;Collez votre liste — les lands existantes sont ignorées."></textarea>
+        <p class="section-label">1. Decklist (Arena / MTGO format)</p>
+        <textarea id="decklist" placeholder="4 Lightning Helix&#10;4 Llanowar Elves&#10;2 Hallowed Fountain&#10;1 Restless Anchorage&#10;...&#10;&#10;Paste your list — lands are detected and shown in review."></textarea>
+        <div class="cta-row" style="margin-top: 0.75rem;">
+          <button class="btn-secondary" id="parseBtn" onclick="handleParse()">Parse Decklist</button>
+          <span id="parseStatus"></span>
+        </div>
       </section>
 
-      <!-- Step 2: Land count + format -->
-      <section class="card" id="section-config">
+      <!-- Step 2: Review Lands -->
+      <section class="card hidden" id="section-review">
+        <p class="section-label">2. Review Detected Lands</p>
+        <p class="analysis-note" id="reviewSummary"></p>
+        <div id="reviewTable"></div>
+      </section>
+
+      <!-- Step 3: Config + Optimize -->
+      <section class="card hidden" id="section-config">
+        <p class="section-label">3. Configuration</p>
         <div class="config-row">
           <div class="field-group">
-            <label for="landCount">Nombre de lands</label>
+            <label for="landCount">Number of lands</label>
             <input type="number" id="landCount" value="24" min="18" max="30" />
           </div>
           <div class="field-group">
@@ -35,13 +48,13 @@
           </div>
         </div>
 
-        <p class="section-label" style="margin-top:1rem;">Types de lands disponibles</p>
+        <p class="section-label" style="margin-top:1rem;">Available land types</p>
         <div class="land-toggles" id="landToggles"></div>
       </section>
 
       <!-- CTA -->
-      <div class="cta-row">
-        <button class="btn-primary" id="calcBtn" onclick="calculate()">Calculer la mana base</button>
+      <div class="cta-row hidden" id="optimizeCta">
+        <button class="btn-primary" id="calcBtn" onclick="calculate()">Optimize Mana Base</button>
         <span id="status"></span>
       </div>
 
@@ -50,7 +63,7 @@
     </main>
 
     <footer>
-      <p>Basé sur <a href="https://www.channelfireball.com/articles/how-many-colored-mana-sources-do-you-need-to-consistently-cast-your-spells-a-guilds-of-ravnica-update/" target="_blank">l'article de Frank Karsten</a> · Données de cartes via <a href="https://scryfall.com" target="_blank">Scryfall API</a></p>
+      <p>Based on <a href="https://www.channelfireball.com/articles/how-many-colored-mana-sources-do-you-need-to-consistently-cast-your-spells-a-guilds-of-ravnica-update/" target="_blank">Frank Karsten's article</a> · Card data via <a href="https://scryfall.com" target="_blank">Scryfall API</a></p>
     </footer>
   </div>
 

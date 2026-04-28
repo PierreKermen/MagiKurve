@@ -1,0 +1,652 @@
+{
+  "format": "standard",
+  "last_updated": "2024-10-28",
+  "version": "1.1.0",
+  "lands": [
+    {
+      "name": "Seachrome Coast",
+      "type": "fastland",
+      "colors": [
+        "W",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Darkslick Shores",
+      "type": "fastland",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Blackcleave Cliffs",
+      "type": "fastland",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Copperline Gorge",
+      "type": "fastland",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Razorverge Thicket",
+      "type": "fastland",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Inspiring Vantage",
+      "type": "fastland",
+      "colors": [
+        "R",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Spirebluff Canal",
+      "type": "fastland",
+      "colors": [
+        "U",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Blooming Marsh",
+      "type": "fastland",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Botanical Sanctum",
+      "type": "fastland",
+      "colors": [
+        "G",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Concealed Courtyard",
+      "type": "fastland",
+      "colors": [
+        "W",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Meticulous Archive",
+      "type": "surveilland",
+      "colors": [
+        "W",
+        "U"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Undercity Sewers",
+      "type": "surveilland",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Raucous Theater",
+      "type": "surveilland",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Commercial District",
+      "type": "surveilland",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Lush Portico",
+      "type": "surveilland",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Shadowy Backstreet",
+      "type": "surveilland",
+      "colors": [
+        "W",
+        "B"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Thundering Falls",
+      "type": "surveilland",
+      "colors": [
+        "U",
+        "R"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Underground Mortuary",
+      "type": "surveilland",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Elegant Parlor",
+      "type": "surveilland",
+      "colors": [
+        "R",
+        "W"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Hedge Maze",
+      "type": "surveilland",
+      "colors": [
+        "G",
+        "U"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Floodfarm Verge",
+      "type": "vergeland",
+      "colors": [
+        "W",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Gloomlake Verge",
+      "type": "vergeland",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Bleachbone Verge",
+      "type": "vergeland",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Blazemire Verge",
+      "type": "vergeland",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Thornspire Verge",
+      "type": "vergeland",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Bleachbone Verge",
+      "type": "vergeland",
+      "colors": [
+        "W",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Riverpyre Verge",
+      "type": "vergeland",
+      "colors": [
+        "U",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Wastewood Verge",
+      "type": "vergeland",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Sunbillow Verge",
+      "type": "vergeland",
+      "colors": [
+        "R",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Willowrush Verge",
+      "type": "vergeland",
+      "colors": [
+        "G",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Anchorage",
+      "type": "creatureland",
+      "colors": [
+        "W",
+        "U"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Reef",
+      "type": "creatureland",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Vents",
+      "type": "creatureland",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Bivouac",
+      "type": "creatureland",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Cottage",
+      "type": "creatureland",
+      "colors": [
+        "G",
+        "B"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Spire",
+      "type": "creatureland",
+      "colors": [
+        "U",
+        "R"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Prairie",
+      "type": "creatureland",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Ridgeline",
+      "type": "creatureland",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Woods",
+      "type": "creatureland",
+      "colors": [
+        "G",
+        "B"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Restless Vent",
+      "type": "creatureland",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "untapped": false,
+      "standard_legal": true
+    },
+    {
+      "name": "Hallowed Fountain",
+      "type": "shockland",
+      "colors": [
+        "W",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Watery Grave",
+      "type": "shockland",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Blood Crypt",
+      "type": "shockland",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Stomping Ground",
+      "type": "shockland",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Temple Garden",
+      "type": "shockland",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Godless Shrine",
+      "type": "shockland",
+      "colors": [
+        "W",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Steam Vents",
+      "type": "shockland",
+      "colors": [
+        "U",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Overgrown Tomb",
+      "type": "shockland",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Sacred Foundry",
+      "type": "shockland",
+      "colors": [
+        "R",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Breeding Pool",
+      "type": "shockland",
+      "colors": [
+        "G",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Plains",
+      "type": "basic",
+      "colors": [
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Island",
+      "type": "basic",
+      "colors": [
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Swamp",
+      "type": "basic",
+      "colors": [
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Mountain",
+      "type": "basic",
+      "colors": [
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Forest",
+      "type": "basic",
+      "colors": [
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Deserted Beach",
+      "type": "slowland",
+      "colors": [
+        "W",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Shipwreck Marsh",
+      "type": "slowland",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Haunted Ridge",
+      "type": "slowland",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Rockfall Vale",
+      "type": "slowland",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Overgrown Farmland",
+      "type": "slowland",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": false
+    },
+    {
+      "name": "Shattered Sanctum",
+      "type": "slowland",
+      "colors": [
+        "W",
+        "B"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Deathcap Glade",
+      "type": "slowland",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Dreamroot Cascade",
+      "type": "slowland",
+      "colors": [
+        "G",
+        "U"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Stormcarved Coast",
+      "type": "slowland",
+      "colors": [
+        "U",
+        "R"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    },
+    {
+      "name": "Sundown Pass",
+      "type": "slowland",
+      "colors": [
+        "R",
+        "W"
+      ],
+      "untapped": true,
+      "standard_legal": true
+    }
+  ]
+}
