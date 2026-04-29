@@ -1,7 +1,7 @@
 /* data.js — ManaKurve · Standard land database
  *
  * Source  : lands_standard.json (static, curated)
- * Types   : fastland, surveilland, vergeland, creatureland, shockland
+ * Types   : fastland, surveilland, vergeland, shockland
  */
 
 var COLOR_NAMES = {
@@ -16,10 +16,10 @@ var TYPE_LABELS = {
   fastland: "Fast Lands",
   surveilland: "Surveil Lands",
   vergeland: "Verge Lands",
-  creatureland: "Creature Lands",
   shockland: "Shock Lands",
   basic: "Basic Lands",
   slowland: "Slow Lands",
+  fixedland: "Fixed Lands",
 };
 
 var LAND_TYPE_NAMES = TYPE_LABELS;

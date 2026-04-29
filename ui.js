@@ -8,16 +8,17 @@ const selectedTypes = new Set([
   "fastland",
   "surveilland",
   "vergeland",
-  "creatureland",
 ]);
 
 let parsedSpells = [];
 let parsedFixedLands = [];
 
+const WUBRG_ORDER = ["W", "U", "B", "R", "G"];
+
 /* ── Init: land type toggle buttons ── */
 function initToggles() {
   const container = document.getElementById("landToggles");
-  const order = ["basic", "shockland", "slowland", "fastland", "surveilland", "vergeland", "creatureland"];
+  const order = ["basic", "shockland", "slowland", "fastland", "surveilland", "vergeland"];
 
   for (const type of order) {
     const btn = document.createElement("button");
@@ -60,7 +61,12 @@ async function handleParse() {
   parseStatus.textContent = `Fetching data for ${unknownCards.length} cards from Scryfall...`;
 
   parsedSpells = [];
-  parsedFixedLands = [];
+  // Lands already in the list are treated as fixed lands to be reviewed
+  parsedFixedLands = recognizedLands.map(rl => ({
+    qty: rl.qty,
+    name: rl.name,
+    land: rl.land
+  }));
   let fetched = 0;
 
   for (const card of unknownCards) {
@@ -97,12 +103,8 @@ async function handleParse() {
     await sleep(SCRYFALL_DELAY_MS);
   }
 
-  let statusMsg = `${parsedSpells.length} spells, ${parsedFixedLands.length} fixed lands detected.`;
-  if (recognizedLands.length > 0) {
-    const totalRec = recognizedLands.reduce((s, l) => s + l.qty, 0);
-    statusMsg += ` (Ignored ${totalRec} recognized lands).`;
-  }
-  parseStatus.textContent = statusMsg;
+  const totalFixed = parsedFixedLands.reduce((s, l) => s + l.qty, 0);
+  parseStatus.textContent = `${parsedSpells.length} spells, ${totalFixed} fixed lands detected.`;
 
   renderReviewTable(parsedFixedLands);
   reviewSection.classList.remove("hidden");
@@ -116,7 +118,7 @@ function renderReviewTable(fixedLands) {
   const summary = document.getElementById("reviewSummary");
 
   if (fixedLands.length === 0) {
-    summary.textContent = "No known lands found in the decklist. All land slots will be optimized.";
+    summary.textContent = "No unknown lands found in the decklist. All land slots will be optimized.";
     container.innerHTML = "";
     return;
   }
@@ -129,8 +131,6 @@ function renderReviewTable(fixedLands) {
   html += '<div class="review-header">Colors</div>';
   html += '<div class="review-header">Type</div>';
   html += '<div class="review-header review-header-right">Qty</div>';
-
-  const WUBRG_ORDER = ["W", "U", "B", "R", "G"];
 
   for (const entry of fixedLands) {
     const pips = [...entry.land.colors]
@@ -196,7 +196,7 @@ async function calculate() {
     const isFallback = manaBases.some(mb => mb.isFallback);
     let fallbackWarning = "";
     if (isFallback) {
-        fallbackWarning = '<div class="warning" style="font-size: 13px; color: #e0a960; padding: 10px 14px; background: rgba(224, 169, 96, 0.1); border: 0.5px solid rgba(224, 169, 96, 0.3); border-radius: var(--radius-md); margin-bottom: 1rem;">⚠️ Python optimization server not available. Falling back to the constructive heuristic approach.</div>';
+      fallbackWarning = '<div class="warning" style="font-size: 13px; color: #e0a960; padding: 10px 14px; background: rgba(224, 169, 96, 0.1); border: 0.5px solid rgba(224, 169, 96, 0.3); border-radius: var(--radius-md); margin-bottom: 1rem;">⚠️ Python optimization server not available. Falling back to the constructive heuristic approach.</div>';
     }
 
     results.innerHTML =
@@ -204,7 +204,7 @@ async function calculate() {
       renderRequirements(requirements, landCount, cardData.length, fixedSources) +
       renderManaBases(manaBases, requirements, parsedFixedLands);
   } catch (e) {
-    results.innerHTML = '<div class="error">An error occurred during optimization.</div>';
+    results.innerHTML = `<div class="error">An error occurred during optimization.<br>Details: ${e.message || String(e)}</div>`;
   } finally {
     setStatus(status, "");
     btn.disabled = false;
@@ -284,7 +284,10 @@ function renderOneBase(mb, rank, requirements, fixedLands) {
   if (fixedLands.length > 0) {
     fixedRows = fixedLands
       .map(({ name, qty, land }) => {
-        const pips = land.colors
+        const pips = [...land.colors]
+          .sort((a, b) => {
+            return WUBRG_ORDER.indexOf(a.toUpperCase()) - WUBRG_ORDER.indexOf(b.toUpperCase());
+          })
           .map((c) => `<span class="pip pip-${c.toLowerCase()}"></span>`)
           .join("");
         return `
@@ -305,7 +308,10 @@ function renderOneBase(mb, rank, requirements, fixedLands) {
     .map(([name, count]) => {
       const land = ALL_LANDS.find((l) => l.name === name);
       if (!land) return "";
-      const pips = land.colors
+      const pips = [...land.colors]
+        .sort((a, b) => {
+          return WUBRG_ORDER.indexOf(a.toUpperCase()) - WUBRG_ORDER.indexOf(b.toUpperCase());
+        })
         .map((c) => `<span class="pip pip-${c.toLowerCase()}"></span>`)
         .join("");
       return `
