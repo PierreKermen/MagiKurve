@@ -2,7 +2,7 @@
 
 ## 🎯 Project Goals
 
-**MagiKurve** is a web-based optimization tool designed to calculate the perfect mana base for a Magic: The Gathering Standard 60-card deck. It uses the mathematical method popularized by **Frank Karsten** combined with a powerful **Constraint Programming (CP-SAT)** model to recommend the best mix of lands.
+**MagiKurve** is a web-based optimization tool designed to calculate the perfect mana base for a Magic: The Gathering Standard 60-card deck. It uses the mathematical method popularized by **Frank Karsten** combined with a powerful **Constraint Programming (CP-SAT)** model to recommend the best mix of lands. It feches up-to-date card data using the Scryfall API (https://scryfall.com/docs/api/cards)
 
 ### Current Roadmap & Planned Features
 Based on our current GitHub issues, the focus areas include:
@@ -16,6 +16,8 @@ Based on our current GitHub issues, the focus areas include:
 MagiKurve operates as a hybrid application:
 1. **Vanilla JS Frontend**: A lightweight, fast client that handles decklist parsing, UI, and external data fetching.
 2. **Python CP-SAT Backend**: A local optimization engine that models the mana base as a Constraint Programming problem.
+
+You can start the local server by running `python3 -m http.server 8000` in your terminal and open `http://localhost:8000` in your browser. To have the CPsat-based optimizer, you need to start from the bridge instead with `source .venv/bin/activate` and `python3 bridge.py`. 
 
 ### Key Files & Components
 
@@ -103,3 +105,5 @@ Sideboard:
 3x Ghost Vacuum
 
 This deck is more complex due to the number of colors and the need to produce multiple colors of mana. It also includes lands that enter the battlefield tapped, which need to be accounted for in the optimization. It also includes lands that can produce multiple colors of mana depending on the gamestate. It also include cards with non trivial mana costs that could be manually overide. Finally, it also encompass a test sideboard to not mix up the maindeck and sideboard.
+
+You can find a complete list of land per cathegory and legality on https://managathering.com/
